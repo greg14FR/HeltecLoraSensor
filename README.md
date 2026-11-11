@@ -34,4 +34,4 @@ Projet **PlatformIO / Arduino** (VS Code) basé sur la librairie **MCCI LoRaWAN 
 
 > **Prérequis PlatformIO** : la carte `heltec_wireless_paper` nécessite `platform = espressif32@^8.0.0` (Arduino core 3.x). Avec une plateforme 6.x/7.x, utiliser `board = esp32-s3-devkitc-1` à la place — la pinmap du SX1262 est définie explicitement dans `src/main.cpp`, donc la variante de carte n'a pas d'impact.
 
-> Wireless Paper V1.1/V1.2 : remplacer `EInkDisplay_WirelessPaperV1` par `EInkDisplay_WirelessPaperV1_1`.
+> Wireless Paper **V1.2** : utiliser `EInkDisplay_WirelessPaperV1_2` dans `src/main.cpp` (déjà en place). Le brochage SX1262 est identique sur toutes les versions (NSS=8, RST=12, BUSY=13, DIO1=14, Vext=45).

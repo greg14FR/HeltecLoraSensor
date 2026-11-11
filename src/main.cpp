@@ -34,9 +34,10 @@ const lmic_pinmap lmic_pins = {
     .spi_freq = 8000000, .pConfig = &myConfig,
 };
 
-// ===== Ecran E-Ink (Wireless Paper V1.0 : 250x122) =====
-// Sur Wireless Paper V1.1/V1.2, remplacer par EInkDisplay_WirelessPaperV1_1
-EInkDisplay_WirelessPaperV1 display;
+// ===== Ecran E-Ink (Wireless Paper : 250x122) =====
+// V1.0   -> EInkDisplay_WirelessPaperV1
+// V1.1.1 / V1.2 -> EInkDisplay_WirelessPaperV1_2
+EInkDisplay_WirelessPaperV1_2 display;
 
 static const unsigned TX_INTERVAL = 60; // secondes entre deux envois
 static unsigned long sendCount = 0;
