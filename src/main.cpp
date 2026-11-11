@@ -6,11 +6,16 @@
 #include "Fonts/FreeSans9pt7b.h"
 #include "Fonts/FreeSansBold18pt7b.h"
 
-// ===== A REMPLIR avec les cles du SenseCAP Portal (OTAA) =====
-static const u1_t PROGMEM APPEUI[8]  = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }; // JoinEUI
-static const u1_t PROGMEM DEVEUI[8]  = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }; // DevEUI
+// ===== Cles OTAA : dans src/secrets.h (local, non commite) =====
+// Copier src/secrets.h.example en src/secrets.h et y renseigner les cles du SenseCAP Portal.
+#if __has_include("secrets.h")
+#include "secrets.h"
+#else
+static const u1_t PROGMEM APPEUI[8]  = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
+static const u1_t PROGMEM DEVEUI[8]  = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
 static const u1_t PROGMEM APPKEY[16] = { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                                         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }; // AppKey
+                                         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
+#endif
 
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8); }
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8); }

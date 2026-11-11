@@ -29,7 +29,7 @@ Projet **PlatformIO / Arduino** (VS Code) basé sur la librairie **MCCI LoRaWAN 
 ## Mise en route
 
 1. Sur le **SenseCAP Portal**, ajouter l'appareil manuellement (DevEUI / JoinEUI / AppKey, profil EU868) et lui attacher le décodeur JavaScript du kit.
-2. Reporter ces clés dans `src/main.cpp` (`APPEUI`, `DEVEUI`, `APPKEY`).
+2. Copier `src/secrets.h.example` en `src/secrets.h` et y reporter ces clés (`APPEUI`, `DEVEUI`, `APPKEY`). `src/secrets.h` est ignoré par git : **ne jamais commiter de vraies clés** (le dépôt est public).
 3. Dans VS Code + PlatformIO : sélectionner la carte `heltec_wireless_paper`, build, upload.
 
 > **Prérequis PlatformIO** : la carte `heltec_wireless_paper` nécessite `platform = espressif32@^8.0.0` (Arduino core 3.x). Avec une plateforme 6.x/7.x, utiliser `board = esp32-s3-devkitc-1` à la place — la pinmap du SX1262 est définie explicitement dans `src/main.cpp`, donc la variante de carte n'a pas d'impact.
