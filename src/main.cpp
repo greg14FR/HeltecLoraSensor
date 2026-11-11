@@ -41,6 +41,7 @@ EInkDisplay_WirelessPaperV1_2 display;
 
 static const unsigned TX_INTERVAL = 60; // secondes entre deux envois
 static unsigned long sendCount = 0;
+static osjob_t sendjob;
 
 void do_send(osjob_t* j);
 
@@ -127,7 +128,7 @@ void onEvent (ev_t ev) {
         Serial.println(F("JOIN OK"));
         showStatus("JOIN OK", "Pret a envoyer");
         LMIC_setLinkCheckMode(0);
-        do_send(os_getCallback());
+        do_send(&sendjob);
         break;
     case EV_TXCOMPLETE:
         Serial.println(F("TX OK"));
