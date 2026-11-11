@@ -36,6 +36,14 @@ void setup() {
 
     if (at_send_check_response("+AT: OK", 1000, "AT\r\n")) {
         is_exist = true;
+        // ===== DEBUG : infos du module Wio-E5 (affichees dans le moniteur serie) =====
+        Serial.println(F("--- DEBUG module Wio-E5 ---"));
+        at_send_check_response(NULL, 1500, "AT+ID\r\n");   // DevEui / AppEui
+        at_send_check_response(NULL, 1000, "AT+DR\r\n");   // region
+        at_send_check_response(NULL, 1000, "AT+CH\r\n");   // canaux
+        at_send_check_response(NULL, 1000, "AT+PORT\r\n"); // port
+        at_send_check_response(NULL, 1000, "AT+KEY\r\n");  // types de cles definies
+        Serial.println(F("--- fin DEBUG ---"));
         // Le kit est deja bind via QR : on ne reconfigure PAS les cles ici.
         // (Si besoin : AT+KEY=APPKEY,"<32 hex>" et AT+ID=DevEui/AppEui,"...")
         at_send_check_response("+MODE: LWOTAA", 1000, "AT+MODE=LWOTAA\r\n");
