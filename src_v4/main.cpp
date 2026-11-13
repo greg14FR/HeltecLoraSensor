@@ -65,7 +65,9 @@ void showLine(const char* l1, const char* l2, const char* l3) {
 
 void setup() {
     Serial.begin(115200);
-    delay(1000);
+    // USB CDC natif de l'ESP32-S3 : attendre que le port soit pret (3-5 s), max 8 s
+    unsigned long t0 = millis();
+    while (!Serial && millis() - t0 < 8000) { }
     Serial.println(F("WiFi LoRa 32 V4 - LoRaWAN boot"));
 
     // Vext du V4 : GPIO36 (version R2) ou GPIO40 (version R8) -> LOW pour alimenter OLED + PA/RF
