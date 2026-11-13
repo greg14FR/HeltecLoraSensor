@@ -34,4 +34,12 @@ Projet **PlatformIO / Arduino** (VS Code) basé sur la librairie **MCCI LoRaWAN 
 
 > **Prérequis PlatformIO** : la carte `heltec_wireless_paper` nécessite `platform = espressif32@^8.0.0` (Arduino core 3.x). Avec une plateforme 6.x/7.x, utiliser `board = esp32-s3-devkitc-1` à la place — la pinmap du SX1262 est définie explicitement dans `src/main.cpp`, donc la variante de carte n'a pas d'impact.
 
+## Leçons apprises (TTN v3 + LMIC)
+
+- Le Wireless Paper a une puce **CP210x** (COMx) : ne PAS mettre `ARDUINO_USB_CDC_ON_BOOT=1`, `Serial` doit rester sur l'UART0.
+- Librairie E-Ink : prendre le **tag v4.6.0 GitHub** (`EInkDisplay_WirelessPaperV1_2` pour le V1.2), le registre n'a que la 4.5.0.
+- **DevEUI : inverser l'ordre des octets** dans `secrets.h` (LMIC envoie LSB-first, TTN affiche MSB-first). L'AppKey ne s'inverse jamais.
+- Côté TTN v3, recréer proprement l'end device si la clé est fausse (les clés ne sont pas éditables) ; gateway au niveau compte, aucun lien app/gateway à faire.
+- Toujours vérifier la clé octet par octet (copier depuis un fichier texte, pas à la main).
+
 > Wireless Paper **V1.2** : utiliser `EInkDisplay_WirelessPaperV1_2` dans `src/main.cpp` (déjà en place). Le brochage SX1262 est identique sur toutes les versions (NSS=8, RST=12, BUSY=13, DIO1=14, Vext=45).
