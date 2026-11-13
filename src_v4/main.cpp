@@ -68,9 +68,13 @@ void setup() {
     delay(1000);
     Serial.println(F("WiFi LoRa 32 V4 - LoRaWAN boot"));
 
-    // Vext du V4 : GPIO36 (version R2) ou GPIO40 (version R8) -> LOW pour alimenter le PA/RF
+    // Vext du V4 : GPIO36 (version R2) ou GPIO40 (version R8) -> LOW pour alimenter OLED + PA/RF
     pinMode(36, OUTPUT); digitalWrite(36, LOW);
     pinMode(40, OUTPUT); digitalWrite(40, LOW);
+    // Front-end FEM du V4 : il faut l'alimenter AVANT d'utiliser le SX1262
+    pinMode(7, OUTPUT); digitalWrite(7, HIGH);   // FEM LDO power
+    pinMode(2, OUTPUT); digitalWrite(2, HIGH);   // FEM enable
+    delay(50);
 
     Wire.begin(17, 18);        // bus OLED (17/18), RST OLED = GPIO21 gere par u8g2
     WireSensors.begin(4, 3);   // bus capteurs (4/3)
