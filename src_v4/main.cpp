@@ -8,8 +8,10 @@
 #include <lmic.h>
 #include <hal/hal.h>
 
-// OLED SSD1306 128x64 du V4 : I2C 0x3C sur SDA=GPIO4 / SCL=GPIO3
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+// OLED SSD1306 128x64 du V4 : bus I2C DEDIE SDA=GPIO17 / SCL=GPIO18, RST=GPIO21, adr 0x3C
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ 21);
+// Bus I2C utilisateur (capteurs) : SDA=GPIO4 / SCL=GPIO3
+TwoWire WireSensors = TwoWire(1);
 
 // ===== Cles OTAA : copier src/secrets.h ici (src_v4/secrets.h, ignore par git) =====
 #if __has_include("secrets.h")
@@ -70,7 +72,8 @@ void setup() {
     pinMode(36, OUTPUT); digitalWrite(36, LOW);
     pinMode(40, OUTPUT); digitalWrite(40, LOW);
 
-    Wire.begin(4, 3);   // SDA=GPIO4, SCL=GPIO3 (bus I2C : OLED 0x3C + capteurs)
+    Wire.begin(17, 18);        // bus OLED (17/18), RST OLED = GPIO21 gere par u8g2
+    WireSensors.begin(4, 3);   // bus capteurs (4/3)
     u8g2.begin();
     showLine("WiFi LoRa 32 V4", "Join LoRaWAN...", "");
 
