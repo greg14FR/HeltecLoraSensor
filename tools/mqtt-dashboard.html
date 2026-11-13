@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Dashboard MQTT TTN - SenseCAP M2</title>
+<title>Dashboard LoRaWAN - uplinks MQTT (via pont local)</title>
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <style>
   body { font-family: sans-serif; margin: 2em; background:#111; color:#eee; }
@@ -15,13 +15,12 @@
 </style>
 </head>
 <body>
-<h2>Dashboard MQTT TTN v3 — uplinks LoRaWAN</h2>
+<h2>Dashboard LoRaWAN — uplinks MQTT</h2>
+<p>Se connecte au pont local (voir <code>tools/ttn-ws-bridge.js</code>) qui lui-même lit TTN.</p>
 <div class="row">
-  Application ID : <input id="app" value="sensecap-m2-greg" size="22">
-  API key : <input id="key" type="password" size="40" placeholder="clé API TTN (View traffic)">
-</div>
-<div class="row">
-  <button onclick="connect()">Connexion MQTT (wss)</button>
+  Broker WebSocket : <input id="broker" value="ws://localhost:9001" size="28">
+  Topic : <input id="topic" value="lorawan/up" size="16">
+  <button onclick="connect()">Connexion</button>
   <span id="status" class="err">déconnecté</span>
 </div>
 <div id="log"></div>
@@ -35,25 +34,17 @@ function print(msg, cls) {
   log.appendChild(d);
   log.scrollTop = log.scrollHeight;
 }
-
+let client = null;
 function connect() {
-  const app = document.getElementById('app').value.trim();
-  const key = document.getElementById('key').value.trim();
-  if (!app || !key) { print('Renseigne Application ID + API key', 'err'); return; }
-
-  const url = 'wss://eu1.cloud.thethings.network:8083/mqtt';
-  const user = app + '@ttn';
-  const topic = 'v3/' + app + '@ttn/devices/+/up';
-
-  print('Connexion à ' + url + ' en tant que ' + user + ' ...');
-  const client = mqtt.connect(url, { username: user, password: key });
-
+  const url = document.getElementById('broker').value.trim();
+  const topic = document.getElementById('topic').value.trim();
+  if (client) client.end();
+  print('Connexion à ' + url + ' ...');
+  client = mqtt.connect(url);
   client.on('connect', () => {
     document.getElementById('status').textContent = 'connecté';
     document.getElementById('status').className = 'ok';
-    client.subscribe(topic, (err) => {
-      print(err ? 'Erreur subscribe: ' + err : 'Abonné à ' + topic, err ? 'err' : 'ok');
-    });
+    client.subscribe(topic, (err) => print(err ? 'Erreur subscribe: ' + err : 'Abonné à ' + topic, err ? 'err' : 'ok'));
   });
   client.on('message', (t, payload) => {
     try {
@@ -63,11 +54,9 @@ function connect() {
       print('UP ' + dev + '  fPort=' + up.f_port +
             '  RSSI=' + (up.rx_metadata && up.rx_metadata[0] ? up.rx_metadata[0].rssi : '?') +
             '  data=' + JSON.stringify(up.decoded_payload || up.frm_payload));
-    } catch (e) {
-      print('MSG brut ' + t + ' : ' + payload.toString());
-    }
+    } catch (e) { print('MSG brut: ' + payload.toString()); }
   });
-  client.on('error', (e) => { print('Erreur: ' + e.message, 'err'); });
+  client.on('error', (e) => print('Erreur: ' + e.message, 'err'));
   client.on('close', () => {
     document.getElementById('status').textContent = 'déconnecté';
     document.getElementById('status').className = 'err';
