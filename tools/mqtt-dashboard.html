@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard MQTT TTN - SenseCAP M2</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+  body { font-family: sans-serif; margin: 2em; background:#111; color:#eee; }
+  input { margin: 4px; padding: 6px; }
+  #log { background:#000; color:#0f0; padding:1em; height:300px; overflow:auto;
+         font-family:monospace; white-space:pre-wrap; }
+  .row { margin: 4px 0; }
+  button { padding: 6px 14px; }
+  .ok { color:#0f0; } .err { color:#f66; }
+</style>
+</head>
+<body>
+<h2>Dashboard MQTT TTN v3 — uplinks LoRaWAN</h2>
+<div class="row">
+  Application ID : <input id="app" value="sensecap-m2-greg" size="22">
+  API key : <input id="key" type="password" size="40" placeholder="clé API TTN (View traffic)">
+</div>
+<div class="row">
+  <button onclick="connect()">Connexion MQTT (wss)</button>
+  <span id="status" class="err">déconnecté</span>
+</div>
+<div id="log"></div>
+
+<script>
+const log = document.getElementById('log');
+function print(msg, cls) {
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
+function connect() {
+  const app = document.getElementById('app').value.trim();
+  const key = document.getElementById('key').value.trim();
+  if (!app || !key) { print('Renseigne Application ID + API key', 'err'); return; }
+
+  const url = 'wss://eu1.cloud.thethings.network:8083/mqtt';
+  const user = app + '@ttn';
+  const topic = 'v3/' + app + '@ttn/devices/+/up';
+
+  print('Connexion à ' + url + ' en tant que ' + user + ' ...');
+  const client = mqtt.connect(url, { username: user, password: key });
+
+  client.on('connect', () => {
+    document.getElementById('status').textContent = 'connecté';
+    document.getElementById('status').className = 'ok';
+    client.subscribe(topic, (err) => {
+      print(err ? 'Erreur subscribe: ' + err : 'Abonné à ' + topic, err ? 'err' : 'ok');
+    });
+  });
+  client.on('message', (t, payload) => {
+    try {
+      const j = JSON.parse(payload.toString());
+      const up = j.uplink_message || {};
+      const dev = (j.end_device_ids && j.end_device_ids.dev_eui) || '?';
+      print('UP ' + dev + '  fPort=' + up.f_port +
+            '  RSSI=' + (up.rx_metadata && up.rx_metadata[0] ? up.rx_metadata[0].rssi : '?') +
+            '  data=' + JSON.stringify(up.decoded_payload || up.frm_payload));
+    } catch (e) {
+      print('MSG brut ' + t + ' : ' + payload.toString());
+    }
+  });
+  client.on('error', (e) => { print('Erreur: ' + e.message, 'err'); });
+  client.on('close', () => {
+    document.getElementById('status').textContent = 'déconnecté';
+    document.getElementById('status').className = 'err';
+  });
+}
+</script>
+</body>
+</html>
