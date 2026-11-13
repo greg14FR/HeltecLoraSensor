@@ -3,8 +3,13 @@
 // Brochage SX1262 identique : NSS=8, SCK=9, MOSI=10, MISO=11, RST=12, BUSY=13, DIO1=14.
 #include <Arduino.h>
 #include <SPI.h>
+#include <Wire.h>
+#include <U8g2lib.h>
 #include <lmic.h>
 #include <hal/hal.h>
+
+// OLED SSD1306 128x64 du V4 : I2C 0x3C sur SDA=GPIO4 / SCL=GPIO3
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
 // ===== Cles OTAA : copier src/secrets.h ici (src_v4/secrets.h, ignore par git) =====
 #if __has_include("secrets.h")
@@ -47,6 +52,15 @@ static osjob_t sendjob;
 
 void do_send(osjob_t* j);
 
+void showLine(const char* l1, const char* l2, const char* l3) {
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.drawStr(0, 12, l1);
+    u8g2.drawStr(0, 30, l2);
+    u8g2.drawStr(0, 48, l3);
+    u8g2.sendBuffer();
+}
+
 void setup() {
     Serial.begin(115200);
     delay(1000);
@@ -55,6 +69,10 @@ void setup() {
     // Vext du V4 : GPIO36 (version R2) ou GPIO40 (version R8) -> LOW pour alimenter le PA/RF
     pinMode(36, OUTPUT); digitalWrite(36, LOW);
     pinMode(40, OUTPUT); digitalWrite(40, LOW);
+
+    Wire.begin(4, 3);   // SDA=GPIO4, SCL=GPIO3 (bus I2C : OLED 0x3C + capteurs)
+    u8g2.begin();
+    showLine("WiFi LoRa 32 V4", "Join LoRaWAN...", "");
 
     os_init();
     LMIC_reset();
@@ -89,6 +107,11 @@ void do_send(osjob_t* j) {
         Serial.print(F("  temp=")); Serial.print(t, 2);
         Serial.print(F("  humi=")); Serial.print(h, 2);
         Serial.print(F("  moisture=")); Serial.println(m);
+
+        char l2[24], l3[24];
+        snprintf(l2, sizeof(l2), "T=%.1fC H=%.0f%%", t, h);
+        snprintf(l3, sizeof(l3), "Soil=%d  #%lu", m, sendCount);
+        showLine("LoRaWAN OK", l2, l3);
     }
     os_setTimedCallback(j, os_getTime() + sec2osticks(TX_INTERVAL), do_send);
 }
@@ -97,6 +120,7 @@ void onEvent (ev_t ev) {
     switch (ev) {
     case EV_JOINED:
         Serial.println(F("JOIN OK"));
+        showLine("JOIN OK", "Pret a envoyer", "");
         LMIC_setLinkCheckMode(0);
         do_send(&sendjob);
         break;
@@ -105,6 +129,7 @@ void onEvent (ev_t ev) {
         break;
     case EV_JOIN_FAILED:
         Serial.println(F("JOIN FAILED - verifier cles/EUI et Vext"));
+        showLine("JOIN FAILED", "voir cles/EUI", "Vext=36/40 LOW");
         break;
     default:
         break;
