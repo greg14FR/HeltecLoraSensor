@@ -64,6 +64,7 @@ void showStatus(const char* line1, const char* line2) {
 void setup() {
     Serial.begin(115200);
     delay(1000);
+    Serial.println(F("Heltec Wireless Paper - LoRaWAN boot"));
 
     pinMode(45, OUTPUT);          // Vext ON (actif a LOW) : alim ecran E-Ink
     digitalWrite(45, LOW);
